@@ -5,13 +5,11 @@ import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
 import backend_one_tech.services.User.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -22,26 +20,22 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> findAll() {
-        List<UserDTO> users = userService.findAll();
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userService.findAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> findById(@PathVariable Long id) {
-        UserDTO user = userService.findById(id);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userService.findById(id));
     }
 
     @GetMapping("/email/{email}")
     public ResponseEntity<UserDTO> findByEmail(@PathVariable String email) {
-        UserDTO user = userService.findByEmail(email);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userService.findByEmail(email));
     }
 
     @GetMapping("/run/{run}")
     public ResponseEntity<UserDTO> findByRun(@PathVariable String run){
-        UserDTO user = userService.findByRun(run);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userService.findByRun(run));
     }
 
     @PostMapping
@@ -51,24 +45,9 @@ public class UserController {
         return ResponseEntity.created(location).body(created);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserDTO> login(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        String password = body.get("password");
-
-        User user = (User) userService.findEntityByEmail(email);
-
-        if (!user.getPassword().equals(password)) {
-            return ResponseEntity.status(401).build();
-        }
-
-        return ResponseEntity.ok(userService.toDTO((backend_one_tech.model.User.User) user));
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserUpdateDTO dto) {
-        UserDTO updated = userService.updateUser(id, dto);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
     @DeleteMapping("/{id}")

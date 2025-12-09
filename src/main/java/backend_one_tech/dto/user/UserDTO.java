@@ -1,10 +1,10 @@
 package backend_one_tech.dto.user;
 
-import backend_one_tech.model.User.UserRole;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /*
 Funciones del DTO
@@ -18,7 +18,6 @@ Obligación de buenas prácticas.
 @Getter
 @Setter
 public class UserDTO {
-
     private Long id;
     private String run;
     private String nombre;
@@ -28,7 +27,7 @@ public class UserDTO {
     private String direccion;
     private String region;
     private String comuna;
-    private UserRole rol;
+    private List<String> roles;
     private Integer puntosLevelUp;
     private String codigoReferido;
 }

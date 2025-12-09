@@ -1,4 +1,4 @@
-package backend_one_tech.model.Product;
+package backend_one_tech.model.product;
 
 
 /*
