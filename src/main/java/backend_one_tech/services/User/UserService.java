@@ -1,14 +1,13 @@
 package backend_one_tech.services.User;
 
-import java.util.List;
-
 import backend_one_tech.dto.user.UserDTO;
 import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
+import backend_one_tech.model.User.User;
+
+import java.util.List;
 
 public interface UserService {
-
-    UserDTO createUser(UserCreateDTO userCreateDTO);
 
     List<UserDTO> findAll();
 
@@ -18,7 +17,13 @@ public interface UserService {
 
     UserDTO findByRun(String run);
 
-    UserDTO updateUser(Long id, UserUpdateDTO userUpdateDTO);
+    UserDTO createUser(UserCreateDTO dto);
+
+    UserDTO updateUser(Long id, UserUpdateDTO dto);
 
     void deleteUser(Long id);
+
+    User findEntityByEmail(String email);
+
+    UserDTO toDTO(User user);
 }

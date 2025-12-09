@@ -5,6 +5,7 @@ import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
 import backend_one_tech.services.User.UserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,15 +56,14 @@ public class UserController {
         String email = body.get("email");
         String password = body.get("password");
 
-        UserDTO user = userService.findByEmail(email);
+        User user = (User) userService.findEntityByEmail(email);
 
         if (!user.getPassword().equals(password)) {
             return ResponseEntity.status(401).build();
         }
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userService.toDTO((backend_one_tech.model.User.User) user));
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserUpdateDTO dto) {

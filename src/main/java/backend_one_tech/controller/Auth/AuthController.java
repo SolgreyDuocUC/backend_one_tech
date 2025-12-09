@@ -17,7 +17,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = (User) userRepository.findByEmail(request.getEmail())
                 .orElse(null);
 
         if (user == null)
@@ -28,4 +28,5 @@ public class AuthController {
 
         return ResponseEntity.ok("Login correcto");
     }
+
 }

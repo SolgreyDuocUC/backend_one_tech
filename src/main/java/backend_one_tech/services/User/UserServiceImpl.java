@@ -8,11 +8,8 @@ import backend_one_tech.model.User.User;
 import backend_one_tech.model.User.UserRole;
 import backend_one_tech.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -20,32 +17,6 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    // CREATE
-
-    @Override
-    public UserDTO createUser(UserCreateDTO dto) {
-
-        User user = new User();
-        user.setRun(dto.getRun());
-        user.setNombre(dto.getNombre());
-        user.setApellidos(dto.getApellidos());
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword())); // Encode password
-        user.setFechaNacimiento(dto.getFechaNacimiento());
-        user.setDireccion(dto.getDireccion());
-        user.setRegion(dto.getRegion());
-        user.setComuna(dto.getComuna());
-        user.setRol(UserRole.CLIENTE);
-        user.setPuntosLevelUp(0);
-        user.setCodigoReferido(null);
-
-        User saved = userRepository.save(user);
-        return toDTO(saved);
-    }
-
-    // READ
 
     @Override
     public List<UserDTO> findAll() {
@@ -55,79 +26,82 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
-    // BUSCAR POR ID
-
     @Override
     public UserDTO findById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new UserNotFoundException("Usuario con ID " + id + " no encontrado"));
+        User user = (User) userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         return toDTO(user);
     }
-
-    // BUSCAR POR EMAIL
 
     @Override
     public UserDTO findByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UserNotFoundException("No existe usuario con email: " + email));
+        User user = (User) userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
 
         return toDTO(user);
     }
-
-
-    // BUSCAR POR RUN
 
     @Override
     public UserDTO findByRun(String run) {
         User user = userRepository.findByRun(run)
-                .orElseThrow(() ->
-                        new UserNotFoundException("No existe usuario con RUN: " + run));
+                .orElseThrow(() -> new UserNotFoundException("RUN: " + run));
 
         return toDTO(user);
     }
 
+    @Override
+    public UserDTO createUser(UserCreateDTO dto) {
 
-    // UPDATE
+        User user = new User();
+        user.setRun(dto.getRun());
+        user.setNombre(dto.getNombre());
+        user.setApellidos(dto.getApellidos());
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword()); // sin encoder por ahora
+        user.setFechaNacimiento(dto.getFechaNacimiento());
+        user.setDireccion(dto.getDireccion());
+        user.setRegion(dto.getRegion());
+        user.setComuna(dto.getComuna());
+        user.setRol(UserRole.CLIENTE);
+
+        User saved = userRepository.save(user);
+        return toDTO(saved);
+    }
 
     @Override
     public UserDTO updateUser(Long id, UserUpdateDTO dto) {
-
         User user = userRepository.findById(id)
-                .orElseThrow(() ->
-                        new UserNotFoundException("Usuario con ID " + id + " no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(id));
 
-        // Actualizar solo lo editable
         user.setNombre(dto.getNombre());
         user.setApellidos(dto.getApellidos());
         user.setDireccion(dto.getDireccion());
         user.setRegion(dto.getRegion());
         user.setComuna(dto.getComuna());
 
-        User updated = userRepository.save(user);
-
+        User updated;
+        updated = userRepository.save(user);
         return toDTO(updated);
     }
-
-
-    // DELETE
 
     @Override
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException("Usuario con ID " + id + " no existe");
+            throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
     }
 
+    @Override
+    public User findEntityByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+    }
 
-    // ENTITY TO DTO
-
-    private UserDTO toDTO(User user) {
+    @Override
+    public UserDTO toDTO(User user) {
         UserDTO dto = new UserDTO();
-
         dto.setId(user.getId());
         dto.setRun(user.getRun());
         dto.setNombre(user.getNombre());
@@ -140,7 +114,6 @@ public class UserServiceImpl implements UserService {
         dto.setRol(user.getRol());
         dto.setPuntosLevelUp(user.getPuntosLevelUp());
         dto.setCodigoReferido(user.getCodigoReferido());
-
         return dto;
     }
 }
