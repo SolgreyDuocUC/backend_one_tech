@@ -82,9 +82,14 @@ public class AuthController {
             return ResponseEntity.status(401).body("Contraseña incorrecta");
         }
 
+        String accessToken = null;
+        System.out.println("ACCESS TOKEN => " + accessToken);
+        String refreshToken = null;
+        System.out.println("REFRESH TOKEN => " + refreshToken);
+
         // Generar JWT usando el bean
-        String accessToken = jwtUtil.generateToken(user);
-        String refreshToken = jwtUtil.generateRefreshToken(user);
+        accessToken = jwtUtil.generateToken(user);
+        refreshToken = jwtUtil.generateRefreshToken(user);
 
         return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
     }
