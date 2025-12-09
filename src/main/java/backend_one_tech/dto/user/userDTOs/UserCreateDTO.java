@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /*
 Este DTO está creado para:
@@ -20,11 +21,11 @@ public class UserCreateDTO {
     private String nombre;
     private String apellidos;
     private String email;
-    private String password; // por ahora no válida contrasenia
+    private String password;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaNacimiento;
     private String direccion;
     private String region;
     private String comuna;
-
+    private List<String> roles;
 }

@@ -1,6 +1,6 @@
 package backend_one_tech.repository;
 
-import backend_one_tech.model.User.User;
+import backend_one_tech.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

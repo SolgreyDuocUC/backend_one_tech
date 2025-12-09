@@ -1,15 +1,18 @@
-package backend_one_tech.model.User;
+package backend_one_tech.model.user;
 
 import backend_one_tech.validations.Age.Adult;
 import backend_one_tech.validations.RUN.ValidRun;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -22,18 +25,18 @@ public class User {
     private Long id;
 
     @Column(name = "run", length = 12, nullable = false, unique = true)
-    @ValidRun //Válida que el RUN sea válido
+    @ValidRun
     private String run;
 
-    @NotBlank(message = "El nombre es obligatorio")
+    @NotBlank
     @Column(name = "nombre", length = 50, nullable = false)
     private String nombre;
 
-    @NotBlank(message = "Los apellidos son obligatorios")
+    @NotBlank
     @Column(name = "apellidos", length = 50, nullable = false)
     private String apellidos;
 
-    @NotBlank(message = "El email es obligatorio")
+    @NotBlank
     @Pattern(
             regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,10}$",
             message = "Debe ser un email válido"
@@ -41,35 +44,64 @@ public class User {
     @Column(name = "email", length = 80, nullable = false, unique = true)
     private String email;
 
-    @NotBlank(message = "La contraseña es obligatoria")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @NotBlank
     @Column(name = "password", length = 200, nullable = false)
     private String password;
 
     @Column(name = "fecha_nacimiento", nullable = false)
-    @Adult  //Válida que el usuario sea adulto
+    @Adult
     private LocalDate fechaNacimiento;
-
 
     @Column(name = "direccion", length = 50, nullable = false)
     private String direccion;
 
-    @NotBlank(message = "La región es obligatoria")
+    @NotBlank
     @Column(name = "region", length = 50, nullable = false)
     private String region;
 
-    @NotBlank(message = "La comuna es obligatoria")
+    @NotBlank
     @Column(name = "comuna", length = 50, nullable = false)
     private String comuna;
-
-    @NotNull(message = "El rol es obligatorio")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "rol", length = 20, nullable = false)
-    private UserRole rol;
 
     @Column(name = "puntos_level_up", nullable = false)
     private int puntosLevelUp = 0;
 
     @Column(name = "codigo_referido", length = 50)
     private String codigoReferido;
-}
 
+    @Column(name = "enabled")
+    private Boolean enabled = true;
+
+    @JsonIgnoreProperties({"users"})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "usuarios_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"),
+            uniqueConstraints = {
+                    @UniqueConstraint(columnNames = {"user_id", "role_id"})
+            }
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    public User() {}
+
+    @PrePersist
+    public void prePersist() {
+        this.enabled = true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(email, user.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, email);
+    }
+
+}
