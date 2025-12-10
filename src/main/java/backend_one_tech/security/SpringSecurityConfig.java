@@ -38,21 +38,35 @@ public class SpringSecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+
+                        // LOGIN y REGISTER → públicos
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
 
+                        // Swagger y H2 → públicos
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
 
-                        .anyRequest().authenticated()
+                        // Crear ADMIN: solo SUPERADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/create-admin").hasRole("SUPERADMIN")
+
+                        // Crear vendedor: solo ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/create-seller").hasRole("ADMIN")
+
+                        // Listar usuarios : PÚBLICO durante el desarrollo
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**").permitAll()
+
+                        .anyRequest().permitAll()
                 )
                 .addFilter(new JwtAuthenticationFilter(authenticationManager()))
                 .addFilter(new JwtValidationFilter(authenticationManager()))
                 .build();
     }
+
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {

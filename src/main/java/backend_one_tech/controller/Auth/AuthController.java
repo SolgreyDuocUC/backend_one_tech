@@ -2,6 +2,7 @@ package backend_one_tech.controller.Auth;
 
 import backend_one_tech.dto.Auth.AuthResponse;
 import backend_one_tech.dto.Auth.LoginRequest;
+import backend_one_tech.dto.user.UserDTO;
 import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.model.user.User;
 import backend_one_tech.security.JwtUtil;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -24,73 +27,86 @@ public class AuthController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
-    // -------------------- Registro --------------------
-
-    @PostMapping("/register")
     @Operation(
-            summary = "Registrar usuario",
-            description = "Crea un nuevo usuario en el sistema. Este endpoint está diseñado para el flujo de registro inicial.",
+            summary = "Registrar un nuevo usuario",
+            description = "Crea un nuevo usuario en el sistema. Si no se especifican roles, se asigna 'USER' por defecto.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Usuario registrado correctamente"
+                            description = "Usuario registrado exitosamente",
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "Datos inválidos o usuario ya existente"
+                            description = "Datos inválidos o el rol especificado no existe"
                     )
             }
     )
-    public ResponseEntity<?> register(@RequestBody UserCreateDTO dto) {
-        User user = userService.createUserEntityForAuth(dto);
-        return ResponseEntity.ok("Usuario registrado correctamente con email: " + user.getEmail());
+    @PostMapping("/register")
+    public ResponseEntity<UserDTO> register(@RequestBody UserCreateDTO dto) {
+        UserDTO userDTO = userService.createUser(dto);
+        return ResponseEntity.ok(userDTO);
     }
 
-    // -------------------- Login --------------------
-
-    @PostMapping("/login")
     @Operation(
             summary = "Iniciar sesión",
-            description = "Autentica a un usuario con su email y contraseña, generando tokens JWT de acceso y refresco.",
+            description = "Autentica a un usuario con su email y contraseña, y devuelve un token de acceso y de refresco.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Autenticación exitosa",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = AuthResponse.class)
-                            )
+                            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))
                     ),
                     @ApiResponse(
                             responseCode = "401",
                             description = "Credenciales incorrectas"
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "El usuario no existe"
                     )
             }
     )
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         User user = userService.findEntityByEmail(request.getEmail());
-
-        if (user == null) {
-            return ResponseEntity.status(404).body("Usuario no encontrado");
-        }
 
         if (!userService.matchesPassword(request.getPassword(), user.getPassword())) {
             return ResponseEntity.status(401).body("Contraseña incorrecta");
         }
 
-        String accessToken = null;
-        System.out.println("ACCESS TOKEN => " + accessToken);
-        String refreshToken = null;
-        System.out.println("REFRESH TOKEN => " + refreshToken);
-
-        // Generar JWT usando el bean
-        accessToken = jwtUtil.generateToken(user);
-        refreshToken = jwtUtil.generateRefreshToken(user);
+        String accessToken = jwtUtil.generateToken(user);
+        String refreshToken = jwtUtil.generateRefreshToken(user);
 
         return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return ResponseEntity.badRequest().body("Refresh token es requerido");
+        }
+
+        // Extraer el email
+        String userEmail;
+        try {
+            userEmail = jwtUtil.extractEmail(refreshToken);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Refresh token inválido o manipulado");
+        }
+
+        // Validar refresh token
+        if (!jwtUtil.isTokenValid(refreshToken)) {
+            return ResponseEntity.status(401).body("Refresh token expirado");
+        }
+
+        // Obtener usuario
+        User user = userService.findEntityByEmail(userEmail);
+
+        // Crear nuevo access token
+        String newAccessToken = jwtUtil.generateToken(user);
+
+        return ResponseEntity.ok(
+                new AuthResponse(newAccessToken, refreshToken)
+        );
+    }
+
 }

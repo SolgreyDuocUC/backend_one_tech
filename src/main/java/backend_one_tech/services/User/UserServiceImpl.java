@@ -14,7 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,10 +83,21 @@ public class UserServiceImpl implements UserService {
         user.setRegion(dto.getRegion());
         user.setComuna(dto.getComuna());
 
-        Role defaultRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new RuntimeException("El rol ROLE_USER no existe"));
-        user.getRoles().clear();
-        user.getRoles().add(defaultRole);
+        Set<Role> roles = new HashSet<>();
+        if (dto.getRoles() == null || dto.getRoles().isEmpty()) {
+            // Si no se especifican roles, asignar 'USER' por defecto
+            Role userRole = roleRepository.findByName("USER")
+                    .orElseThrow(() -> new RuntimeException("El rol por defecto 'USER' no existe"));
+            roles.add(userRole);
+        } else {
+            // Si se especifican roles, buscarlos y asignarlos
+            dto.getRoles().forEach(roleDTO -> {
+                Role role = roleRepository.findByName(roleDTO.getName())
+                        .orElseThrow(() -> new RuntimeException("El rol '" + roleDTO.getName() + "' no existe"));
+                roles.add(role);
+            });
+        }
+        user.setRoles(roles);
 
         User saved = userRepository.save(user);
         return toDTO(saved);
@@ -161,8 +174,8 @@ public class UserServiceImpl implements UserService {
         user.setRegion(dto.getRegion());
         user.setComuna(dto.getComuna());
 
-        Role defaultRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new RuntimeException("Rol ROLE_USER no existe"));
+        Role defaultRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new RuntimeException("Rol USER no existe"));
 
         user.getRoles().clear();
         user.getRoles().add(defaultRole);
