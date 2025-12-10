@@ -1,11 +1,12 @@
 package backend_one_tech.dto.user.userDTOs;
 
+import backend_one_tech.model.user.Role;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 /*
 Este DTO está creado para:
@@ -27,5 +28,5 @@ public class UserCreateDTO {
     private String direccion;
     private String region;
     private String comuna;
-    private List<String> roles;
+    private Set<Role> roles;
 }
