@@ -29,5 +29,5 @@ public interface UserService {
 
     boolean matchesPassword(String raw, String encoded);
 
-    User createUserEntityForAuth(UserCreateDTO dto); // ← AHORA SÍ DEVUELVE User
+    User createUserEntityForAuth(UserCreateDTO dto);
 }
