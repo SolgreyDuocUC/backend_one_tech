@@ -38,8 +38,7 @@ public class User {
 
     @NotBlank
     @Pattern(
-            regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,10}$",
-            message = "Debe ser un email válido"
+            regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,10}$"
     )
     @Column(name = "email", length = 80, nullable = false, unique = true)
     private String email;
@@ -49,8 +48,8 @@ public class User {
     @Column(name = "password", length = 200, nullable = false)
     private String password;
 
-    @Column(name = "fecha_nacimiento", nullable = false)
     @Adult
+    @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
     @Column(name = "direccion", length = 50, nullable = false)
@@ -73,6 +72,10 @@ public class User {
     @Column(name = "enabled")
     private Boolean enabled = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "genero", nullable = true)
+    private Genero genero = Genero.SIN_ESPECIFICAR;
+
     @JsonIgnoreProperties({"users"})
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -85,11 +88,12 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
-    public User() {}
-
     @PrePersist
     public void prePersist() {
         this.enabled = true;
+        if (this.genero == null) {
+            this.genero = Genero.SIN_ESPECIFICAR;
+        }
     }
 
     @Override
@@ -103,5 +107,4 @@ public class User {
     public int hashCode() {
         return Objects.hash(id, email);
     }
-
 }

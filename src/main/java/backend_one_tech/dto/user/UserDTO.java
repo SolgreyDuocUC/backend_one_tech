@@ -27,6 +27,7 @@ public class UserDTO {
     private String direccion;
     private String region;
     private String comuna;
+    private String genero;
     private List<String> roles;
     private Integer puntosLevelUp;
     private String codigoReferido;

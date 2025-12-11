@@ -13,5 +13,6 @@ public class UserUpdateDTO {
     private String direccion;
     private String region;
     private String comuna;
+    private String genero;
     private List<String> roles;
 }
