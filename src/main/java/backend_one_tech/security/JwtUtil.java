@@ -4,6 +4,7 @@ import backend_one_tech.model.user.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -26,10 +27,21 @@ public class JwtUtil {
     // TOKENS
 
     public String generateToken(User user) {
+
+        // Convertimos roles a authorities
+        var authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .toList();
+
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION))
+                .claim("id", user.getId())
+                .claim("email", user.getEmail())
+                .claim("name", user.getNombre())
+                .claim("apellidos", user.getApellidos())
+                .claim("authorities", authorities)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

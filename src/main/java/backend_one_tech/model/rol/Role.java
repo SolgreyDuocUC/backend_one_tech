@@ -1,5 +1,6 @@
-package backend_one_tech.model.user;
+package backend_one_tech.model.rol;
 
+import backend_one_tech.model.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

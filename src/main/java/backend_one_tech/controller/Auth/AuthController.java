@@ -77,6 +77,10 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
     }
 
+    @Operation(
+            summary = "Refrescar el token",
+            description = "Mantiene el token del usuario para que pueda mantener la sesión activa"
+    )
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");

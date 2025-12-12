@@ -1,5 +1,6 @@
 package backend_one_tech.model.user;
 
+import backend_one_tech.model.rol.Role;
 import backend_one_tech.validations.Age.Adult;
 import backend_one_tech.validations.RUN.ValidRun;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
