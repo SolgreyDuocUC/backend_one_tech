@@ -5,7 +5,7 @@ import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
 import backend_one_tech.exceptions.UserNotFoundException;
 import backend_one_tech.model.user.Genero;
-import backend_one_tech.model.user.Role;
+import backend_one_tech.model.rol.Role;
 import backend_one_tech.model.user.User;
 import backend_one_tech.repository.RoleRepository;
 import backend_one_tech.repository.UserRepository;

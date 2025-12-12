@@ -36,41 +36,42 @@ public class SpringSecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
 
-                        // LOGIN y REGISTER → públicos
+                        /** AUTH PÚBLICO */
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
 
-                        // Swagger y H2 → públicos
+                        /** SWAGGER & H2 */
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
 
-                        // Crear ADMIN: solo SUPERADMIN
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/create-admin").hasRole("SUPERADMIN")
+                        /** ROLES: solo admin/superadmin */
+                        .requestMatchers("/api/v1/roles/**").hasAnyRole("ADMIN", "SUPERADMIN")
 
-                        // Crear vendedor: solo ADMIN
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/create-seller").hasRole("ADMIN")
+                        /** USERS: solo admin */
+                        .requestMatchers("/api/v1/users/**").hasAnyRole("ADMIN", "SUPERADMIN")
 
-                        // Listar usuarios : PÚBLICO durante el desarrollo
-                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**").permitAll()
-
-                        .anyRequest().permitAll()
+                        /** RESTO: autenticados */
+                        .anyRequest().authenticated()
                 )
+
                 .addFilter(new JwtAuthenticationFilter(authenticationManager()))
                 .addFilter(new JwtValidationFilter(authenticationManager()))
+
                 .build();
     }
 
-
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(Arrays.asList("*"));
