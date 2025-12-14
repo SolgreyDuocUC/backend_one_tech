@@ -4,13 +4,12 @@ import backend_one_tech.dto.user.UserDTO;
 import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
 import backend_one_tech.exceptions.UserNotFoundException;
-import backend_one_tech.model.user.Genero;
 import backend_one_tech.model.rol.Role;
+import backend_one_tech.model.user.Genero;
 import backend_one_tech.model.user.User;
 import backend_one_tech.repository.RoleRepository;
 import backend_one_tech.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +23,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    @Autowired
     private final UserRepository userRepository;
-
-    @Autowired
     private final RoleRepository roleRepository;
-
-    @Autowired
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -43,23 +37,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO findById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
-        return toDTO(user);
+        return toDTO(
+                userRepository.findById(id)
+                        .orElseThrow(() -> new UserNotFoundException(id))
+        );
     }
 
     @Override
     public UserDTO findByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(email));
-        return toDTO(user);
+        return toDTO(
+                userRepository.findByEmail(email)
+                        .orElseThrow(() -> new UserNotFoundException(email))
+        );
     }
 
     @Override
     public UserDTO findByRun(String run) {
-        User user = userRepository.findByRun(run)
-                .orElseThrow(() -> new UserNotFoundException("RUN: " + run));
-        return toDTO(user);
+        return toDTO(
+                userRepository.findByRun(run)
+                        .orElseThrow(() -> new UserNotFoundException("RUN: " + run))
+        );
     }
 
     @Override
@@ -68,34 +65,17 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
+
         if (userRepository.existsByRun(dto.getRun())) {
             throw new RuntimeException("RUN already in use");
         }
 
-        User user = new User();
-        user.setRun(dto.getRun());
-        user.setNombre(dto.getNombre());
-        user.setApellidos(dto.getApellidos());
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setFechaNacimiento(dto.getFechaNacimiento());
-        user.setDireccion(dto.getDireccion());
-        user.setRegion(dto.getRegion());
-        user.setComuna(dto.getComuna());
+        User user = buildUserFromDTO(dto);
 
-        user.setGenero(
-                dto.getGenero() != null
-                        ? Genero.valueOf(dto.getGenero())
-                        : Genero.SIN_ESPECIFICAR
-        );
-
-        // ******* LA CORRECCIÓN IMPORTANTE *********
-        if (dto.getRoles() != null && !dto.getRoles().isEmpty()) {
-            Set<Role> roles = dto.getRoles().stream()
-                    .map(roleName ->
-                            roleRepository.findByName(roleName)
-                                    .orElseThrow(() ->
-                                            new RuntimeException("Rol no existe: " + roleName)))
+        if (dto.getRoleIds() != null && !dto.getRoleIds().isEmpty()) {
+            Set<Role> roles = dto.getRoleIds().stream()
+                    .map(id -> roleRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Rol no existe con ID: " + id)))
                     .collect(Collectors.toSet());
             user.setRoles(roles);
         } else {
@@ -103,7 +83,6 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new RuntimeException("Rol CLIENTE no existe"));
             user.getRoles().add(clienteRole);
         }
-        // *******************************************
 
         return toDTO(userRepository.save(user));
     }
@@ -121,12 +100,10 @@ public class UserServiceImpl implements UserService {
         if (dto.getComuna() != null) user.setComuna(dto.getComuna());
         if (dto.getGenero() != null) user.setGenero(Genero.valueOf(dto.getGenero()));
 
-        if (dto.getRoles() != null && !dto.getRoles().isEmpty()) {
-            Set<Role> roles = dto.getRoles().stream()
-                    .map(roleName ->
-                            roleRepository.findByName(roleName)
-                                    .orElseThrow(() ->
-                                            new RuntimeException("Rol no existe: " + roleName)))
+        if (dto.getRoleIds() != null && !dto.getRoleIds().isEmpty()) {
+            Set<Role> roles = dto.getRoleIds().stream()
+                    .map(roleId -> roleRepository.findById(roleId)
+                            .orElseThrow(() -> new RuntimeException("Rol no existe con ID: " + roleId)))
                     .collect(Collectors.toSet());
             user.setRoles(roles);
         }
@@ -155,47 +132,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUserEntityForAuth(UserCreateDTO dto) {
-
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email already in use");
-        }
-        if (userRepository.existsByRun(dto.getRun())) {
-            throw new RuntimeException("RUN already in use");
-        }
-
-        User user = new User();
-        user.setRun(dto.getRun());
-        user.setNombre(dto.getNombre());
-        user.setApellidos(dto.getApellidos());
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setFechaNacimiento(dto.getFechaNacimiento());
-        user.setDireccion(dto.getDireccion());
-        user.setRegion(dto.getRegion());
-        user.setComuna(dto.getComuna());
-
-        user.setGenero(
-                dto.getGenero() != null
-                        ? Genero.valueOf(dto.getGenero())
-                        : Genero.SIN_ESPECIFICAR
-        );
-
-        // Misma corrección aquí
-        if (dto.getRoles() != null && !dto.getRoles().isEmpty()) {
-            Set<Role> roles = dto.getRoles().stream()
-                    .map(roleName ->
-                            roleRepository.findByName(roleName)
-                                    .orElseThrow(() ->
-                                            new RuntimeException("Rol no existe: " + roleName)))
-                    .collect(Collectors.toSet());
-            user.setRoles(roles);
-        } else {
-            Role clienteRole = roleRepository.findByName("CLIENTE")
-                    .orElseThrow(() -> new RuntimeException("Rol CLIENTE no existe"));
-            user.getRoles().add(clienteRole);
-        }
-
-        return userRepository.save(user);
+        return userRepository.save(buildUserFromDTO(dto));
     }
 
     @Override
@@ -222,5 +159,26 @@ public class UserServiceImpl implements UserService {
         );
 
         return dto;
+    }
+
+    private User buildUserFromDTO(UserCreateDTO dto) {
+
+        User user = new User();
+        user.setRun(dto.getRun());
+        user.setNombre(dto.getNombre());
+        user.setApellidos(dto.getApellidos());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setFechaNacimiento(dto.getFechaNacimiento());
+        user.setDireccion(dto.getDireccion());
+        user.setRegion(dto.getRegion());
+        user.setComuna(dto.getComuna());
+        user.setGenero(
+                dto.getGenero() != null
+                        ? Genero.valueOf(dto.getGenero())
+                        : Genero.SIN_ESPECIFICAR
+        );
+
+        return user;
     }
 }

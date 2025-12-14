@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,5 +24,6 @@ public class UserCreateDTO {
     private String region;
     private String comuna;
     private String genero;
-    private List<String> roles;
+
+    private Set<Long> roleIds;
 }

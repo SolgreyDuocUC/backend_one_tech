@@ -6,7 +6,6 @@ import javax.crypto.SecretKey;
 
 public class TokenJwtConfig {
 
-    // Clave secreta fija (puedes poner tu string como bytes)
     public static final String SECRET = "63e00738b0fb4a40926cbbfbeee2c33ea30db4d7b02162e05d90b2c7699276df";
 
     public static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
