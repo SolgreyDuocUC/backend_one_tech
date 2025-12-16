@@ -3,6 +3,7 @@ package backend_one_tech.dto.user.userDTOs;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -16,5 +17,5 @@ public class UserUpdateDTO {
     private String comuna;
     private String genero;
 
-    private Set<Long> roleIds;
+    private List<Long> roleIds;
 }
