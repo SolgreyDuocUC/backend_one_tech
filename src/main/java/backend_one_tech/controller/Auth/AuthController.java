@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -64,53 +65,28 @@ public class AuthController {
             }
     )
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+
         User user = userService.findEntityByEmail(request.getEmail());
 
         if (!userService.matchesPassword(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(401).body("Contraseña incorrecta");
+            return ResponseEntity.status(401).build();
         }
 
         String accessToken = jwtUtil.generateToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
-    }
-
-    @Operation(
-            summary = "Refrescar el token",
-            description = "Mantiene el token del usuario para que pueda mantener la sesión activa"
-    )
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refreshToken");
-
-        if (refreshToken == null || refreshToken.isBlank()) {
-            return ResponseEntity.badRequest().body("Refresh token es requerido");
-        }
-
-        // Extraer el email
-        String userEmail;
-        try {
-            userEmail = jwtUtil.extractEmail(refreshToken);
-        } catch (Exception e) {
-            return ResponseEntity.status(401).body("Refresh token inválido o manipulado");
-        }
-
-        // Validar refresh token
-        if (!jwtUtil.isTokenValid(refreshToken)) {
-            return ResponseEntity.status(401).body("Refresh token expirado");
-        }
-
-        // Obtener usuario
-        User user = userService.findEntityByEmail(userEmail);
-
-        // Crear nuevo access token
-        String newAccessToken = jwtUtil.generateToken(user);
+        List<String> roles = user.getRoles().stream()
+                .map(r -> r.getName().replace("ROLE_", ""))
+                .toList();
 
         return ResponseEntity.ok(
-                new AuthResponse(newAccessToken, refreshToken)
+                new AuthResponse(
+                        accessToken,
+                        refreshToken,
+                        user.getEmail(),
+                        roles
+                )
         );
     }
-
 }
