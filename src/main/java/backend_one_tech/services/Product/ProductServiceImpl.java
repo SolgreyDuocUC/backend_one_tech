@@ -39,6 +39,8 @@ public class ProductServiceImpl implements ProductService {
         p.setPrice(dto.price());
         p.setStock(dto.stock());
         p.setStockCritico(dto.stockCritico());
+        p.setCategory(dto.category());
+        p.setImagen(dto.imagen());
         p.setFeatured(dto.featured() != null ? dto.featured() : false);
 
         return toResponse(productRepository.save(p));
@@ -74,9 +76,11 @@ public class ProductServiceImpl implements ProductService {
         if (dto.price() != null) p.setPrice(dto.price());
         if (dto.stock() != null) p.setStock(dto.stock());
         if (dto.stockCritico() != null) p.setStockCritico(dto.stockCritico());
+        if (dto.category() != null) p.setCategory(dto.category());
+        if (dto.imagen() != null) p.setImagen(dto.imagen());
         if (dto.featured() != null) p.setFeatured(dto.featured());
 
-        // regla stockCritico <= stock (considerando valores finales)
+        // regla stockCritico <= stock
         if (p.getStockCritico() != null && p.getStock() != null && p.getStockCritico() > p.getStock()) {
             throw new ResponseStatusException(BAD_REQUEST, "Stock crítico no puede ser mayor al stock");
         }
@@ -101,6 +105,8 @@ public class ProductServiceImpl implements ProductService {
                 p.getPrice(),
                 p.getStock(),
                 p.getStockCritico(),
+                p.getCategory(),
+                p.getImagen(),
                 p.getFeatured(),
                 p.getCreatedAt(),
                 p.getUpdatedAt()

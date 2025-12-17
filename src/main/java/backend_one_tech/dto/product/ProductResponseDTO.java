@@ -11,6 +11,8 @@ public record ProductResponseDTO(
         BigDecimal price,
         Integer stock,
         Integer stockCritico,
+        String category,
+        String imagen,
         Boolean featured,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
