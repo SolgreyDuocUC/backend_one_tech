@@ -1,6 +1,7 @@
 package backend_one_tech.services.User;
 
 import backend_one_tech.dto.user.UserDTO;
+import backend_one_tech.dto.user.userDTOs.ChangePasswordDTO;
 import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
 import backend_one_tech.model.user.User;
@@ -22,6 +23,8 @@ public interface UserService {
     UserDTO updateUser(Long id, UserUpdateDTO dto);
 
     void deleteUser(Long id);
+
+    void changePassword(Long userId, ChangePasswordDTO dto);
 
     User findEntityByEmail(String email);
 

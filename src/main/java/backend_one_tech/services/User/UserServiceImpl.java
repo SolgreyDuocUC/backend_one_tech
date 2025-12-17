@@ -1,6 +1,7 @@
 package backend_one_tech.services.User;
 
 import backend_one_tech.dto.user.UserDTO;
+import backend_one_tech.dto.user.userDTOs.ChangePasswordDTO;
 import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
 import backend_one_tech.exceptions.UserNotFoundException;
@@ -109,6 +110,24 @@ public class UserServiceImpl implements UserService {
         }
 
         return toDTO(userRepository.save(user));
+    }
+
+    @Override
+    public void changePassword(Long userId, ChangePasswordDTO dto) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        if (!dto.getNewPassword().equals(dto.getConfirmNewPassword())) {
+            throw new RuntimeException("Passwords do not match");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
     }
 
     @Override

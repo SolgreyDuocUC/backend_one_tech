@@ -1,6 +1,7 @@
 package backend_one_tech.controller.User;
 
 import backend_one_tech.dto.user.UserDTO;
+import backend_one_tech.dto.user.userDTOs.ChangePasswordDTO;
 import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
 import backend_one_tech.services.User.UserService;
@@ -57,6 +58,16 @@ public class UserController {
     @Operation(summary = "Actualizar usuario", description = "Actualiza información de un usuario existente.")
     public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserUpdateDTO dto) {
         return ResponseEntity.ok(userService.updateUser(id, dto));
+    }
+
+    @PutMapping("/{id}/change-password")
+    @Operation(summary = "Cambiar contraseña", description = "Permite a un usuario cambiar su contraseña actual.")
+    public ResponseEntity<Void> changePassword(
+            @PathVariable Long id,
+            @RequestBody ChangePasswordDTO dto
+    ) {
+        userService.changePassword(id, dto);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
