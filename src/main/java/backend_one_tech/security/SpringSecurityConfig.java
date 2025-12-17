@@ -34,47 +34,64 @@ public class SpringSecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    //Seguridad basada en pruebas para desarrollo
 
+    @Bean
+    SecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(auth -> auth
-
-                        /** AUTH PÚBLICO */
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
-
-                        /** SWAGGER & H2 */
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
-
-                        /** ROLES */
-                        .requestMatchers("/api/v1/roles/**").hasAnyRole("ADMIN", "SUPERADMIN")
-
-                        /** USERS – usuario autenticado */
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/*").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/*/self").authenticated()
-
-                        /** USERS – solo admin */
-                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users").hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/*").hasAnyRole("ADMIN", "SUPERADMIN")
-
-                        /** RESTO */
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
-
-                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
-                .addFilter(new JwtValidationFilter(authenticationManager()))
-
                 .build();
     }
+
+    //Seguridad pensada en producción
+
+//    @Bean
+//    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//
+//        return http
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+//                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+//                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//
+//                .authorizeHttpRequests(auth -> auth
+//
+//                        /** AUTH PÚBLICO */
+//                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
+//
+//                        /** SWAGGER & H2 */
+//                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+//                        .requestMatchers("/h2-console/**").permitAll()
+//
+//                        /** ROLES */
+//                        .requestMatchers("/api/v1/roles/**").hasAnyRole("ADMIN", "SUPERADMIN")
+//
+//                        /** USERS – usuario autenticado */
+//                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/*").authenticated()
+//                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/*/self").authenticated()
+//
+//                        /** USERS – solo admin */
+//                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyRole("ADMIN", "SUPERADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/api/v1/users").hasAnyRole("ADMIN", "SUPERADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/*").hasAnyRole("ADMIN", "SUPERADMIN")
+//
+//                        /** RESTO */
+//                        .anyRequest().authenticated()
+//                )
+//
+//                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
+//                .addFilter(new JwtValidationFilter(authenticationManager()))
+//
+//                .build();
+//    }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
