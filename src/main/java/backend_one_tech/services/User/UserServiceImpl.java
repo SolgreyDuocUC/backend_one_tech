@@ -131,6 +131,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteOwnAccount(Long userId, String password) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Password incorrecta");
+        }
+
+        userRepository.delete(user);
+    }
+
+
+    @Override
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException(id);

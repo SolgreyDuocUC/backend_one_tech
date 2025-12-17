@@ -82,10 +82,11 @@ public class AuthController {
 
         return ResponseEntity.ok(
                 new AuthResponse(
-                        accessToken,
-                        refreshToken,
+                        user.getId(),
                         user.getEmail(),
-                        roles
+                        roles,
+                        accessToken,
+                        refreshToken
                 )
         );
     }

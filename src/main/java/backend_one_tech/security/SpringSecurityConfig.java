@@ -54,13 +54,19 @@ public class SpringSecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
 
-                        /** ROLES: solo admin/superadmin */
+                        /** ROLES */
                         .requestMatchers("/api/v1/roles/**").hasAnyRole("ADMIN", "SUPERADMIN")
 
-                        /** USERS: solo admin */
-                        .requestMatchers("/api/v1/users/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                        /** USERS – usuario autenticado */
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/*").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/*/self").authenticated()
 
-                        /** RESTO: autenticados */
+                        /** USERS – solo admin */
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users").hasAnyRole("ADMIN", "SUPERADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users/*").hasAnyRole("ADMIN", "SUPERADMIN")
+
+                        /** RESTO */
                         .anyRequest().authenticated()
                 )
 

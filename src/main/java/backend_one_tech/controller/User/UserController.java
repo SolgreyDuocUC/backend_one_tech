@@ -1,7 +1,7 @@
 package backend_one_tech.controller.User;
 
 import backend_one_tech.dto.user.UserDTO;
-import backend_one_tech.dto.user.userDTOs.ChangePasswordDTO;
+import backend_one_tech.dto.user.userDTOs.DeleteAccountDTO;
 import backend_one_tech.dto.user.userDTOs.UserCreateDTO;
 import backend_one_tech.dto.user.userDTOs.UserUpdateDTO;
 import backend_one_tech.services.User.UserService;
@@ -60,20 +60,17 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
-    @PutMapping("/{id}/change-password")
-    @Operation(summary = "Cambiar contraseña", description = "Permite a un usuario cambiar su contraseña actual.")
-    public ResponseEntity<Void> changePassword(
+    @DeleteMapping("/{id}/self")
+    @Operation(
+            summary = "Eliminar cuenta propia",
+            description = "Permite a un usuario eliminar su propia cuenta confirmando su contraseña"
+    )
+    public ResponseEntity<Void> deleteOwnAccount(
             @PathVariable Long id,
-            @RequestBody ChangePasswordDTO dto
+            @RequestBody DeleteAccountDTO dto
     ) {
-        userService.changePassword(id, dto);
+        userService.deleteOwnAccount(id, dto.getPassword());
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Eliminar usuario", description = "Elimina un usuario según su ID.")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
 }

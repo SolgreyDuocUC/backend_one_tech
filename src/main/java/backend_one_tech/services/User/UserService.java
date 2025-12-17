@@ -33,4 +33,7 @@ public interface UserService {
     boolean matchesPassword(String raw, String encoded);
 
     User createUserEntityForAuth(UserCreateDTO dto);
+
+    void deleteOwnAccount(Long userId, String password);
+
 }
